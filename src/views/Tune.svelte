@@ -44,6 +44,15 @@
     refreshing = false
   }
 
+  function applyDisplayToDevice(settings: typeof display) {
+    updateDisplay(settings)
+    adb.setResolution(settings.resolutionWidth, settings.resolutionHeight)
+    adb.setRefreshRate(settings.refreshRate)
+    adb.setCpuLevel(settings.cpuLevel, settings.cpuDynamic)
+    adb.setGpuLevel(settings.gpuLevel, settings.gpuDynamic)
+    adb.setFfrLevel(settings.ffrLevel, settings.ffrDynamic)
+  }
+
   function applyResolution(w: number, h: number) {
     resW = w
     resH = h
@@ -80,12 +89,7 @@
   }
 
   function applyAndLaunch(profile: GameProfile) {
-    updateDisplay(profile.display)
-    adb.setResolution(profile.display.resolutionWidth, profile.display.resolutionHeight)
-    adb.setRefreshRate(profile.display.refreshRate)
-    adb.setCpuLevel(profile.display.cpuLevel, profile.display.cpuDynamic)
-    adb.setGpuLevel(profile.display.gpuLevel, profile.display.gpuDynamic)
-    adb.setFfrLevel(profile.display.ffrLevel, profile.display.ffrDynamic)
+    applyDisplayToDevice(profile.display)
     adb.launchApp(profile.packageName)
   }
 
@@ -97,16 +101,15 @@
   }
 
   function loadPreset(preset: persistence.DisplayPreset) {
-    updateDisplay(preset.settings)
-    adb.setResolution(preset.settings.resolutionWidth, preset.settings.resolutionHeight)
-    adb.setRefreshRate(preset.settings.refreshRate)
-    adb.setCpuLevel(preset.settings.cpuLevel, preset.settings.cpuDynamic)
-    adb.setGpuLevel(preset.settings.gpuLevel, preset.settings.gpuDynamic)
-    adb.setFfrLevel(preset.settings.ffrLevel, preset.settings.ffrDynamic)
+    applyDisplayToDevice(preset.settings)
     showPresetList = false
   }
 
-  onMount(() => { refresh() })
+  onMount(async () => {
+    await refresh()
+    resW = display.resolutionWidth
+    resH = display.resolutionHeight
+  })
 </script>
 
 <Header title="Ocular Migraine">

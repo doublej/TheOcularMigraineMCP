@@ -12,7 +12,7 @@
 
   let activeSection: 'apps' | 'device' | 'console' | 'actions' = $state('apps')
 
-  // --- Apps state ---
+
   let kioskEnabled = $state(false)
   let kioskApp = $state(persistence.getKioskApp())
   let kioskPickerOpen = $state(false)
@@ -31,13 +31,13 @@
   let apkPath = $state('')
   let installOutput = $state('')
 
-  // --- Console state ---
+
   let adbInput = $state('')
   let shellInput = $state('')
   let consoleOutput = $state('')
   let scripts = $state(persistence.loadUserScripts())
 
-  // --- Device state ---
+
   let detectionMethod = $state<'appusage' | 'logcat'>('appusage')
 
   const quickApps: Record<string, string> = {
@@ -47,7 +47,7 @@
     'OVR Metrics': 'com.oculus.ovrmonitormetricsservice',
   }
 
-  // --- Apps functions ---
+
   async function installApk() {
     if (!apkPath.trim()) return
     installOutput = 'Installing...'
@@ -86,40 +86,26 @@
   async function applyWhitelist() {
     persistence.setWhitelist(whitelist)
     const allPkgs = await adb.getInstalledPackages()
-    for (const pkg of allPkgs) {
-      if (!whitelist.includes(pkg)) {
-        await adb.disablePackage(pkg)
-      }
-    }
+    const toDisable = allPkgs.filter(pkg => !whitelist.includes(pkg))
+    await Promise.all(toDisable.map(pkg => adb.disablePackage(pkg)))
   }
 
   async function applyBlacklist() {
     persistence.setBlacklist(blacklist)
-    for (const pkg of blacklist) {
-      await adb.disablePackage(pkg)
-    }
+    await Promise.all(blacklist.map(pkg => adb.disablePackage(pkg)))
   }
 
   async function disableAll() {
     whitelistEnabled = false
     blacklistEnabled = false
     const allPkgs = await adb.getInstalledPackages()
-    for (const pkg of allPkgs) {
-      await adb.enablePackage(pkg)
-    }
+    await Promise.all(allPkgs.map(pkg => adb.enablePackage(pkg)))
   }
 
-  // --- Console functions ---
-  async function runAdbCommand() {
-    if (!adbInput.trim()) return
-    consoleOutput = await adb.shell(adbInput)
-    adbInput = ''
-  }
-
-  async function runShellCommand() {
-    if (!shellInput.trim()) return
-    consoleOutput = await adb.shell(shellInput)
-    shellInput = ''
+  async function runCommand(input: string, clear: () => void) {
+    if (!input.trim()) return
+    consoleOutput = await adb.shell(input)
+    clear()
   }
 
   function handleScriptClick(index: number) {
@@ -140,7 +126,7 @@
     persistence.saveUserScripts(scripts)
   }
 
-  // --- Device/Settings functions ---
+
   async function saveSettings() {
     const props = await adb.getCurrentOculusProps()
     persistence.saveSettingsBackup(props)
@@ -342,9 +328,9 @@
             class="text-input"
             bind:value={adbInput}
             placeholder="adb command..."
-            onkeydown={(e) => { if (e.key === 'Enter') runAdbCommand() }}
+            onkeydown={(e) => { if (e.key === 'Enter') runCommand(adbInput, () => adbInput = '') }}
           />
-          <Button size="sm" variant="primary" onclick={runAdbCommand}>Run</Button>
+          <Button size="sm" variant="primary" onclick={() => runCommand(adbInput, () => adbInput = '')}>Run</Button>
         </div>
         <div class="input-row">
           <input
@@ -352,9 +338,9 @@
             class="text-input"
             bind:value={shellInput}
             placeholder="shell command..."
-            onkeydown={(e) => { if (e.key === 'Enter') runShellCommand() }}
+            onkeydown={(e) => { if (e.key === 'Enter') runCommand(shellInput, () => shellInput = '') }}
           />
-          <Button size="sm" variant="primary" onclick={runShellCommand}>Run</Button>
+          <Button size="sm" variant="primary" onclick={() => runCommand(shellInput, () => shellInput = '')}>Run</Button>
         </div>
         {#if consoleOutput}
           <pre class="output">{consoleOutput}</pre>
