@@ -116,11 +116,11 @@ export async function getInstalledPackages(): Promise<string[]> {
 }
 
 export async function startRecording(): Promise<void> {
-  await shell('am start-foreground-service -a com.oculus.metacam.START_RECORDING')
+  await setprop('debug.oculus.enableVideoCapture', 1)
 }
 
 export async function stopRecording(): Promise<void> {
-  await shell('am start-foreground-service -a com.oculus.metacam.STOP_RECORDING')
+  await setprop('debug.oculus.enableVideoCapture', 0)
 }
 
 // --- Device info queries ---
