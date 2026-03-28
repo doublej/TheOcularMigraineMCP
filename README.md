@@ -6,7 +6,7 @@ A native Android app for managing Meta Quest VR headsets (Quest 1/2/3/Pro). Cont
 
 The Ocular Migraine MCP was created by [petermg](https://github.com/petermg/TheOcularMigraineMCP). All credit for the concept, feature design, ADB command research, and the exhaustive work mapping every Quest setting to its `debug.oculus.*` property goes to him. His original Tasker-based app is genuinely one of the most feature-complete Quest management tools out there — it does things no other app bothers to do.
 
-This fork is purely a UI rebuild. The original interface, lovingly crafted in Tasker, ironically gave me an actual ocular migraine — which felt like a sign. The feature set is identical; the only thing that changed is that it now runs as a native Svelte + Capacitor app with a dark UI designed for staring at through VR lenses without wanting to close your eyes.
+This fork is a UI rebuild using Svelte 5 + Capacitor. The feature set is identical; the only thing that changed is the interface.
 
 ## Features
 
